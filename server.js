@@ -7,6 +7,7 @@ const googleStrat = require(`passport-google-oauth`).OAuth2Strategy;
 const strat = require(`passport-local`).Strategy;
 const session = require(`express-session`);
 const bcrypt = require(`bcryptjs`);
+const ReactPort= 3001 || 3002;
 
 mongoose.connect(`mongodb://localhost:27017/reactTodo`);
 
@@ -17,7 +18,6 @@ let Port = process.env.port || 5454;
 app.use(bodyParser.json());
 app.use(session({secret:"shashvat"}));
 app.use(bodyParser.urlencoded({extended:true}));
-app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use((req,res,next)=>{
@@ -26,7 +26,7 @@ app.use((req,res,next)=>{
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header(`Access-Control-Allow-Methods`, `POST`);
     res.header(`Access-Control-Expose-Headers`, `x-auth`);
-     next();
+    next();
 });
 
 passport.serializeUser((user,done)=>{
@@ -108,6 +108,7 @@ app.post(`/login`,passport.authenticate(`local`,{
 
 app.get(`/success`,(req,res)=>{
     console.log(`success`);
+    console.log(`req.user`,req.user);
     res.header(`x-auth`,req.user);
     res.send(req.user);
 });
@@ -133,7 +134,7 @@ app.get(`/googlesuccess`,(req,res)=>{
     res.header(`x-auth`,req.user);
     gg=req.user;
     console.log(req.user);
-    res.redirect(`http://localhost:3001/`);
+    res.redirect(`http://localhost:${ReactPort}/`);
 
 });
 app.get(`/googlefailure`,(req,res)=>{
@@ -141,10 +142,20 @@ app.get(`/googlefailure`,(req,res)=>{
     res.send(`google failure`);
 });
 app.get(`/getUser`,(req,res)=>{
-    console.log(gg);
+    console.log(`getUser called:`,gg);
     res.send(gg);
 });
-
+app.get(`/logout`,(req,res)=>{
+    console.log(`logging out user`,req.user);
+    req.logOut();
+    console.log(`user logged out`,req.user);
+    res.send(`logged out`);
+});
+app.get(`/getReqUser`,(req,res)=>{
+    console.log(req.user);
+    res.header(`x-auth`,req.user);
+    res.send(req.user);
+});
 
 app.listen(Port,()=>{console.log(`listening to ${Port}`)});
 
